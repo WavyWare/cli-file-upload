@@ -1,10 +1,13 @@
-import express from "express";
+import express, {Request, Response} from "express";
 import logger from "./middleware/logger";
+import * as path from "node:path";
+import * as fs from "node:fs";
+import {validateUploadSize} from "./middleware/fileValidation";
+import {recieveFile} from "./controllers/recieveFile";
 
 const port = process.env.PORT || 3000;
 const app = express();
 
-app.use(express.json());
 app.use(logger)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -12,6 +15,24 @@ app.use(express.static("public"));
 app.get('/ping', (_req, res) => {
     res.status(200).send({msg: 'pong'});
 })
+
+app.put("/:name", validateUploadSize, recieveFile)
+
+app.get("/:id/:filename", (req: Request, res: Response) => {
+    const {id, filename} = req.params;
+
+    if (typeof filename !== "string" || typeof id !== "string") {
+        return res.status(400).send("Invalid parameter");
+    }
+    const safeFile = path.join(__dirname, filename)
+    const filePath = path.join(__dirname, "uploads", "public", id, safeFile);
+
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send("File not found");
+    }
+
+    res.sendFile(filePath);
+});
 
 app.listen(port, () => {
     console.log("Listening on port " + port);
