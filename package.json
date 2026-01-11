@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "watch": "tsc --watch",
-    "start": "node --watch dist/index.js"
+    "start": "node --watch dist/index.js",
+    "build": "tsc"
   },
   "dependencies": {
     "chalk": "^5.6.2",
