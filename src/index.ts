@@ -10,7 +10,6 @@ const app = express();
 
 app.use(logger)
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
 
 app.get('/ping', (_req, res) => {
     res.status(200).send({msg: 'pong'});
@@ -24,14 +23,14 @@ app.get("/:id/:filename", (req: Request, res: Response) => {
     if (typeof filename !== "string" || typeof id !== "string") {
         return res.status(400).send("Invalid parameter");
     }
-    const safeFile = path.join(__dirname, filename)
-    const filePath = path.join(__dirname, "uploads", "public", id, safeFile);
 
+    const safeFilename = path.basename(filename);
+    const filePath = path.join(__dirname, "uploads", "public", id+"-"+safeFilename);
     if (!fs.existsSync(filePath)) {
         return res.status(404).send("File not found");
     }
 
-    res.sendFile(filePath);
+    res.download(filePath);
 });
 
 app.listen(port, () => {

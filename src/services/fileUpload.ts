@@ -11,8 +11,8 @@ export const uploadFile = async (req: Request) => {
     }
     const safeName = generateRandomString(5) + "-" + path.basename(originalName).replace(/[^a-zA-Z0-9\-_.]/g, "_");
 
-    fs.mkdirSync(path.join(__dirname, "uploads", "tmp"), { recursive: true });
-    fs.mkdirSync(path.join(__dirname, "uploads", "public"), { recursive: true });
+    fs.mkdirSync(path.join(__dirname, "..", "uploads", "tmp"), { recursive: true });
+    fs.mkdirSync(path.join(__dirname, "..", "uploads", "public"), { recursive: true });
 
     const tmpPath = path.join(__dirname, "..", "uploads", "tmp", safeName);
     const finalPath = path.join(__dirname, "..", "uploads", "public", safeName);
