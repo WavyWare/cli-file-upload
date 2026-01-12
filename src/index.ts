@@ -4,11 +4,16 @@ import * as path from "node:path";
 import * as fs from "node:fs";
 import {validateUploadSize} from "./middleware/fileValidation";
 import {recieveFile} from "./controllers/recieveFile";
+import rateLimit from "express-rate-limit";
 
-const port = process.env.PORT || 3000;
+export const port = process.env.PORT || 3000;
 const app = express();
 
 app.use(logger)
+app.use(rateLimit({
+    windowMs: 60000,
+    limit: 100
+}))
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/ping', (_req, res) => {
