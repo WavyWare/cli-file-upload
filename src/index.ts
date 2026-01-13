@@ -1,43 +1,38 @@
-import express, {Request, Response} from "express";
+import express from "express";
 import logger from "./middleware/logger";
-import * as path from "node:path";
-import * as fs from "node:fs";
 import {validateUploadSize} from "./middleware/fileValidation";
 import {recieveFile} from "./controllers/recieveFile";
 import rateLimit from "express-rate-limit";
+import {sendFile} from "./controllers/sendFile";
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/libsql';
+import {filesTable} from "./db/schema";
+import {eq, sql} from "drizzle-orm";
 
 export const port = process.env.PORT || 3000;
 const app = express();
-
 app.use(logger)
+app.use(express.urlencoded({ extended: true }));
 app.use(rateLimit({
     windowMs: 60000,
     limit: 100
 }))
-app.use(express.urlencoded({ extended: true }));
-
-app.get('/ping', (_req, res) => {
-    res.status(200).send({msg: 'pong'});
-})
 
 app.put("/:name", validateUploadSize, recieveFile)
+app.get("/:id/:filename", sendFile);
 
-app.get("/:id/:filename", (req: Request, res: Response) => {
-    const {id, filename} = req.params;
-
-    if (typeof filename !== "string" || typeof id !== "string") {
-        return res.status(400).send("Invalid parameter");
-    }
-
-    const safeFilename = path.basename(filename);
-    const filePath = path.join(__dirname, "uploads", "public", id+"-"+safeFilename);
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).send("File not found");
-    }
-
-    res.download(filePath);
-});
+export const db = drizzle(process.env.DB_FILE_NAME!);
 
 app.listen(port, () => {
     console.log("Listening on port " + port);
 })
+
+
+setInterval(async () => {
+    let result = await db.select({id: filesTable.id}).from(filesTable).where(eq(filesTable.expiration_date, sql`${Date.now}`));
+    let ids = "";
+    result.forEach((block, index) => {
+        ids += block.id + (index !== result.length ? ", ": "");
+    })
+    db.delete(filesTable).where(sql`IN (${ids})`)
+}, 60*5)
