@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import {port} from "../index";
 import {generateRandomString} from "../util";
 import path from "node:path";
 import {fileUploadtoDatabase} from "../services/fileUploadtoDatabase";
