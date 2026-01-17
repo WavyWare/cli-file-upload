@@ -18,7 +18,7 @@ export const receiveFile = async (req: Request, res: Response) => {
         const filename = uri.slice(1).join("-");
         return res.status(201).send(
             chalk.blueBright.bold("File SHA256 checksum: ") + chalk.whiteBright(result.sha256) + "\n" +
-            chalk.blueBright.bold("File URI: ") + chalk.whiteBright(req.protocol + "://" + req.hostname + ":" + port + `/${id}/${filename}\n`)
+            chalk.blueBright.bold("File URI: ") + chalk.whiteBright(req.protocol + "://" + req.hostname + `/${id}/${filename}\n`)
         );
     } catch (err) {
         console.error(err);
