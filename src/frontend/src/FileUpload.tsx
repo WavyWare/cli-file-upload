@@ -15,7 +15,7 @@ export function FileUpload() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const res = await fetch("http://localhost:3000/", {
+        await fetch("http://localhost:3000/", {
             method: "POST",
             body: formData
         }).then(res => res.json());
