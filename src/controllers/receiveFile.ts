@@ -79,3 +79,47 @@ const uploadFile = async (req: Request) => {
         });
     })
 }
+
+export const postReceive = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send("No file uploaded");
+        }
+
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const sha256 = crypto
+            .createHash("sha256")
+            .update(fileBuffer)
+            .digest("hex");
+
+        const id = path.parse(req.file.filename).name;
+        const originalName = req.file.originalname;
+
+        const inserted = await fileUploadtoDatabase({
+            id,
+            filename: originalName
+        });
+
+        if (!inserted) {
+            return res.status(500).send("DB insert failed");
+        }
+
+        const finalPath = path.join(
+            process.cwd(),
+            "dist/uploads/public",
+            req.file.filename
+        );
+
+        fs.renameSync(req.file.path, finalPath);
+
+        return res.status(201).json({
+            id,
+            filename: originalName,
+            sha256
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Upload error");
+    }
+};
